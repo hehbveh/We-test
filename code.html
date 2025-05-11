@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>תודה לך אמא - דוד אלף</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #b8860b 0%, #f0e68c 50%, #daa520 100%);
+            color: #fff;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: -10px; left: -10px; right: -10px; bottom: -10px;
+            background: inherit;
+            filter: blur(15px);
+            z-index: -1;
+        }
+
+        .player-container {
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .album-art {
+            width: 150px;
+            height: 150px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease-out;
+        }
+
+        .song-info h1 {
+            font-size: 1.8em;
+            margin: 0 0 5px 0;
+            font-weight: 700;
+            color: #ffd700; /* Gold color for title */
+        }
+
+        .song-info h2 {
+            font-size: 1.2em;
+            margin: 0 0 20px 0;
+            font-weight: 400;
+            color: #eee;
+        }
+
+        .lyrics-container {
+            height: 120px; /* Adjust based on how many lines you want to show */
+            overflow: hidden; /* Will be auto-scrolled by JS */
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            line-height: 1.6;
+            position: relative;
+        }
+        
+        .lyrics-container p {
+            margin: 0;
+            padding: 5px 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            opacity: 0.5;
+        }
+
+        .lyrics-container p.current-line {
+            opacity: 1;
+            font-weight: 700;
+            color: #fff;
+            transform: scale(1.05);
+        }
+        
+        .lyrics-container p.previous-line,
+        .lyrics-container p.next-line {
+            opacity: 0.7;
+            transform: scale(0.95);
+        }
+
+
+        audio {
+            width: 100%;
+            margin-top: 20px;
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        /* Customizing controls (basic) */
+        audio::-webkit-media-controls-panel {
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+        audio::-webkit-media-controls-play-button,
+        audio::-webkit-media-controls-timeline,
+        audio::-webkit-media-controls-current-time-display,
+        audio::-webkit-media-controls-time-remaining-display,
+        audio::-webkit-media-controls-mute-button,
+        audio::-webkit-media-controls-volume-slider {
+            filter: invert(1) contrast(0.7) sepia(0.5) hue-rotate(10deg) saturate(5); /* Gold-ish tint */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="player-container">
+        <img src="https://i.ytimg.com/vi/m0of329p55s/hqdefault.jpg" alt="Album Art" class="album-art" id="albumArt">
+        <!-- Replace ^ src with your local image e.g. "toda_lach_ima.jpg" -->
+        
+        <div class="song-info">
+            <h1>תודה לך אמא</h1>
+            <h2>דוד אלף</h2>
+        </div>
+
+        <div class="lyrics-container" id="lyricsContainer">
+            <!-- Lyrics will be populated here -->
+        </div>
+
+        <audio id="audioPlayer" controls>
+            <source src="song.mp3" type="audio/mpeg">
+            <!-- Replace ^ src with your audio file. You might need to provide a full local path like file:///C:/path/to/song.mp3 for testing locally -->
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+
+    <script>
+        const lyricsData = [
+            { time: 0.5, text: "אמא," },
+            { time: 2.6, text: "עם המזוודה ביד, עזבתי את רחוב" },
+            { time: 4.8, text: "הרינגג" },
+            { time: 7.9, text: "העיניים שלך אמרו הכל, דמעות" },
+            { time: 11.8, text: "שקטות" },
+            { time: 14.4, text: "היית שם, לא אמרת הרבה, רק חיבקת" },
+            { time: 18.1, text: "אותי חזק" },
+            { time: 20.7, text: "הלכתי משם, לדרך חדשה, רחוב" },
+            { time: 24.3, text: "הרינגג מאחור" },
+            { time: 28.3, text: "היית בשקט, לא ידעת איך לשחרר" },
+            { time: 31.5, text: "הכאב בעיניים שלך, זה מה שאני" },
+            { time: 34.1, text: "זוכר" },
+            { time: 34.9, text: "אני כאן בירושלים, אבל את תמיד" },
+            { time: 37.7, text: "איתי" },
+            { time: 38.4, text: "המרחק לא משנה, את בלב שלי" },
+            { time: 43.9, text: "אני כל כך שמח כאן בארץ ישראל" },
+            { time: 48.0, text: "לומד כל יום, וגדל כל רגע" },
+            { time: 51.5, text: "תודה על ההזדמנות הזאת, על כל מה" },
+            { time: 54.7, text: "שנתת לי" },
+            { time: 55.9, text: "אני כאן בזכותך, והלב שלי תמיד" },
+            { time: 59.0, text: "איתך" },
+            // Verse 2
+            { time: 61.1, text: "הגעתי לירושלים, הכל היה חדש" },
+            { time: 64.9, text: "ומוזר" },
+            { time: 66.9, text: "הייתי לבד, אבל אני זוכר את החום" },
+            { time: 70.5, text: "שלך" },
+            { time: 73.9, text: "את לימדת אותי להיות חזק, להאמין" },
+            { time: 78.4, text: "בדרך" },
+            { time: 80.9, text: "אני זוכר את הדמעות שלך, את השקט" },
+            { time: 84.9, text: "שהיה בבית" },
+            { time: 88.1, text: "היית בשקט, לא ידעת איך לשחרר" },
+            { time: 91.4, text: "הכאב בעיניים שלך, זה מה שאני" },
+            { time: 93.7, text: "זוכר" },
+            { time: 94.8, text: "אני כאן בירושלים, אבל את תמיד" },
+            { time: 97.5, text: "איתי" },
+            { time: 98.3, text: "המרחק לא משנה, את בלב שלי" },
+            { time: 102.5, text: "אני כל כך שמח כאן בארץ ישראל" },
+            { time: 106.0, text: "לומד כל יום, וגדל כל רגע" },
+            { time: 109.9, text: "תודה על ההזדמנות הזאת, על כל מה" },
+            { time: 112.8, text: "שנתת לי" },
+            { time: 114.1, text: "אני כאן בזכותך, והלב שלי תמיד" },
+            { time: 117.2, text: "איתך" },
+            // Bridge / Outro
+            { time: 121.5, text: "אני כאן בזכותך והלב שלי תמיד איתך"},
+            { time: 125.5, text: "בכל תפילה, אני מרגיש אותך קרוב" },
+            { time: 129.0, text: "החוזק שלך איתי, בכל שלב שאני" },
+            { time: 132.0, text: "עובר" },
+            { time: 132.8, text: "המרחק לא משנה, את תמיד בלב שלי" },
+            { time: 136.0, text: "האהבה שלך לא נגמרת, את תמיד" },
+            { time: 139.1, text: "איתי" },
+            // Chorus Repeat
+            { time: 142.0, text: "אני כל כך שמח כאן בארץ ישראל" },
+            { time: 146.5, text: "לומד כל יום, וגדל כל רגע" },
+            { time: 149.9, text: "תודה על ההזדמנות הזאת, על כל מה" },
+            { time: 152.9, text: "שנתת לי" },
+            { time: 154.0, text: "אני כאן בזכותך, והלב שלי תמיד" },
+            { time: 157.0, text: "איתך" },
+            { time: 158.0, text: "אמא, את תמיד איתי" },
+            { time: 164.5, text: "תמיד איתי" },
+            { time: 188.0, text: "" } // End
+        ];
+
+        const audioPlayer = document.getElementById('audioPlayer');
+        const lyricsContainer = document.getElementById('lyricsContainer');
+        const albumArt = document.getElementById('albumArt');
+        let currentLineIndex = -1;
+        let animationFrameId;
+
+        // Populate lyrics
+        lyricsData.forEach((line, index) => {
+            const p = document.createElement('p');
+            p.textContent = line.text;
+            p.id = `line-${index}`;
+            lyricsContainer.appendChild(p);
+        });
+
+        function updateLyrics() {
+            const currentTime = audioPlayer.currentTime;
+            let newCurrentLineIndex = -1;
+
+            for (let i = 0; i < lyricsData.length; i++) {
+                if (currentTime >= lyricsData[i].time) {
+                    newCurrentLineIndex = i;
+                } else {
+                    break;
+                }
+            }
+
+            if (newCurrentLineIndex !== currentLineIndex) {
+                // Remove old classes
+                if (currentLineIndex !== -1) {
+                    document.getElementById(`line-${currentLineIndex}`).classList.remove('current-line', 'previous-line', 'next-line');
+                    if (currentLineIndex > 0) document.getElementById(`line-${currentLineIndex-1}`)?.classList.remove('previous-line');
+                    if (currentLineIndex < lyricsData.length -1) document.getElementById(`line-${currentLineIndex+1}`)?.classList.remove('next-line');
+                }
+                
+                currentLineIndex = newCurrentLineIndex;
+
+                // Add new classes
+                if (currentLineIndex !== -1) {
+                    const currentLineElement = document.getElementById(`line-${currentLineIndex}`);
+                    currentLineElement.classList.add('current-line');
+                    
+                    // Scroll into view
+                    const containerRect = lyricsContainer.getBoundingClientRect();
+                    const lineRect = currentLineElement.getBoundingClientRect();
+                    
+                    // Center the current line if possible
+                    const scrollOffset = (lineRect.top - containerRect.top) - (containerRect.height / 2) + (lineRect.height / 2);
+                    lyricsContainer.scrollTop += scrollOffset;
+
+                    // Style previous and next lines for context
+                    if (currentLineIndex > 0) {
+                        document.getElementById(`line-${currentLineIndex-1}`)?.classList.add('previous-line');
+                    }
+                    if (currentLineIndex < lyricsData.length - 1) {
+                        document.getElementById(`line-${currentLineIndex+1}`)?.classList.add('next-line');
+                    }
+                }
+            }
+        }
+        
+        let lastBeatTime = 0;
+        const beatInterval = 60 / 120; // Assuming a BPM of 120 for pulsing, adjust as needed
+
+        function pulseAlbumArt() {
+            if (!audioPlayer.paused) {
+                const currentTime = audioPlayer.currentTime;
+                // A simple way to create a pulse, not perfectly synced to actual beats
+                // but gives a rhythmic feel.
+                const scale = 1 + Math.sin(currentTime * Math.PI * 2 / beatInterval) * 0.03; 
+                albumArt.style.transform = `scale(${scale})`;
+            } else {
+                albumArt.style.transform = 'scale(1)';
+            }
+            animationFrameId = requestAnimationFrame(pulseAlbumArt);
+        }
+
+        audioPlayer.addEventListener('timeupdate', updateLyrics);
+        audioPlayer.addEventListener('play', () => {
+            if (!animationFrameId) pulseAlbumArt();
+        });
+        audioPlayer.addEventListener('pause', () => {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+            albumArt.style.transform = 'scale(1)'; // Reset scale on pause
+        });
+        audioPlayer.addEventListener('ended', () => {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+            albumArt.style.transform = 'scale(1)';
+        });
+
+        // Initial call to set lyrics if audio is already playing or at a certain time
+        updateLyrics();
+    </script>
+
+</body>
+</html>
